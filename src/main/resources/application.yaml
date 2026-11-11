@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: booking
+  database:
+    url: jdbc:postgresql://localhost:5432/booking
+    username: booking
+    password: booking
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: false
+    properties:
+      hibernate:
+        format_sql: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
