@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -69,5 +70,19 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         pd.setProperty("code", code);
         pd.setProperty("timestamp", Instant.now());
         return pd;
+    }
+
+    // menangani exception UnAuthorizedException, yang terjadi ketika pengguna mencoba mengakses sumber daya yang tidak diizinkan
+    @ExceptionHandler(UnAuthorizedException.class)
+    public ProblemDetail handleUnAuthorized(UnAuthorizedException ex) {
+        return problem(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", ex.getMessage());
+    }
+
+    // menangani exception AccessDeniedException, yang terjadi ketika pengguna mencoba mengakses sumber daya yang memerlukan otorisasi tertentu, tetapi tidak memiliki hak akses yang sesuai
+    //contoh: pengguna memiliki peran USER, tetapi mencoba mengakses endpoint yang hanya dapat diakses oleh ADMIN
+    // ini merupakan hadling untuk kode HTTP 403 Forbidden, yang menunjukkan bahwa server memahami permintaan, tetapi menolak untuk mengizinkan akses ke sumber daya yang diminta.
+    @ExceptionHandler(AccessDeniedException.class)
+    public ProblemDetail handleAccessDenied(AccessDeniedException ex) {
+        return problem(HttpStatus.FORBIDDEN, "FORBIDDEN", "Anda tidak punya akses ke dalam resousrce ini");
     }
 }

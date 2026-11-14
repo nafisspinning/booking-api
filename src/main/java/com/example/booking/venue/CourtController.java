@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -15,7 +17,10 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 
 import com.example.booking.common.web.PageResponse;
+import com.example.booking.venue.dto.CourtRequest;
 import com.example.booking.venue.dto.CourtResponse;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping ("/api/courts")
@@ -34,6 +39,11 @@ public class CourtController {
     @GetMapping("/{id}")
     public CourtResponse getCourt(@PathVariable UUID id) {
         return venueService.getCourt(id);
+    }
+
+    @PutMapping("/{id}")
+    public CourtResponse updateCourt(@PathVariable UUID id, @Valid @RequestBody CourtRequest req) {
+        return venueService.updateCourt(id, req);
     }
 
     @DeleteMapping("/{id}")

@@ -114,6 +114,24 @@ public class VenueService {
         }
     }
 
+    //fungsi untuk melakukan update court berdasarkan id
+    @Transactional
+    public CourtResponse updateCourt(UUID id, CourtRequest req) {
+        Court court = courtRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Lapangan %s tidak ditemukan".formatted(id)));
+
+        if (!court.getName().equalsIgnoreCase(req.name()) &&
+                courtRepository.existsByVenueIdAndNameIgnoreCase(court.getVenue().getId(), req.name())) {
+            throw new ConflictException("COURT_NAME_TAKEN",
+                    "Nama lapangan '%d' sudah dipakai di venue ini".formatted(req.name()));
+        }
+
+        court.setName(req.name());
+        court.setSportType(req.sportType());
+        court.setPricePerHour(req.pricePerHour());
+        return CourtResponse.from(court);
+    }
+
     //fungsi untuk melakukan update data venue berdasarkan request
     private void apply(Venue venue, VenueRequest req) {
         venue.setName(req.name());
