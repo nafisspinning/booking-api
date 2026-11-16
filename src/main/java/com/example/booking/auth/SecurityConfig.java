@@ -46,11 +46,12 @@ public class SecurityConfig {
                         //khusus admin
                         .requestMatchers(HttpMethod.POST,"/api/venues/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT,"/api/venues/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/venues/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/courts/**").hasRole("ADMIN")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
-                .oauth2ResourceServer(oauth -> oauth.jwt(jwt -> jwt.jwtAuthenticationConverter(new JwtAuthenticationConverter())));
+                .oauth2ResourceServer(oauth -> oauth.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())));
         return http.build();
     }
 
@@ -67,7 +68,7 @@ public class SecurityConfig {
      @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         var authorities = new JwtGrantedAuthoritiesConverter();
-        authorities.setAuthoritiesClaimName("roles");
+        authorities.setAuthoritiesClaimName("role");
         authorities.setAuthorityPrefix("ROLE_");
         var converter = new JwtAuthenticationConverter();
         converter.setJwtGrantedAuthoritiesConverter(authorities);

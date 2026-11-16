@@ -85,4 +85,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ProblemDetail handleAccessDenied(AccessDeniedException ex) {
         return problem(HttpStatus.FORBIDDEN, "FORBIDDEN", "Anda tidak punya akses ke dalam resousrce ini");
     }
+
+    // menangani error untuk kondisi race-condition dimana data booking yang akan di input pada database
+    // maka akan otomatis tertolak
+    @ExceptionHandler(org.springframework.orm.ObjectOptimisticLockingFailureException.class)
+    public ProblemDetail handleOptimisticLock(Exception ex) {
+        return problem(HttpStatus.CONFLICT, "CONCURRENT_UPDATE",
+            "Data sedang diubah oleh proses lain, silakan coba lagi");
+    }
 }
