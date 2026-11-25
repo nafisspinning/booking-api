@@ -31,3 +31,8 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Rahasia ###
+.env
+.env.*
+!.env.example

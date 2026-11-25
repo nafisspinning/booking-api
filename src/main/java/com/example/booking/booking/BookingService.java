@@ -101,7 +101,7 @@ public class BookingService {
         return BookingResponse.from(booking);
     }
 
-    Booking findOwned(UUID userId, UUID bookingId) {
+    public Booking findOwned(UUID userId, UUID bookingId) {
         return bookingRepository.findWithCourtById(bookingId)
                 .filter(b -> b.getUser().getId().equals(userId))
                 .orElseThrow(() -> new NotFoundException("Booking tidak ditemukan"));

@@ -189,18 +189,18 @@ git switch -c feat/payment
 
 Sudah mengabaikan: `target/` (hasil build Maven), `HELP.md`, file IDE (`.idea`, `.vscode/`, `*.iml`, ...).
 
-**Belum** ada aturan untuk rahasia. Tambahkan sebelum ada file seperti itu:
+Aturan untuk rahasia (sudah ditambahkan):
 
 ```gitignore
 ### Rahasia ###
 .env
 .env.*
-*.pem
-*.key
-id_ed25519*
-*_deploy
-*_deploy.pub
+!.env.example
 ```
+
+- `.env` berisi nilai asli (`MIDTRANS_SERVER_KEY`, `JWT_SECRET`) dan **tidak di-commit**. Spring membacanya lewat
+  `spring.config.import: optional:file:.env[.properties]` di `application.yaml`.
+- `.env.example` hanya berisi nama variabel tanpa nilai, dan **di-commit** sebagai panduan. Pola `!` membatalkan aturan `.env.*` khusus untuk file ini.
 
 Cara mengecek apakah sebuah file diabaikan:
 

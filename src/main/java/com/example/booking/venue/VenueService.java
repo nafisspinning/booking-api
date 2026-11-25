@@ -56,7 +56,7 @@ public class VenueService {
         Venue venue = findVenue(venueId);
         if (courtRepository.existsByVenueIdAndNameIgnoreCase(venueId, req.name())) {
             throw new ConflictException("COURT_NAME_TAKEN",
-                    "Nama lapangan '%d' sudah dipakai di venue ini".formatted(req.name()));
+                    "Nama lapangan '%s' sudah dipakai di venue ini".formatted(req.name()));
         }
 
         Court court = new Court();
@@ -123,7 +123,7 @@ public class VenueService {
         if (!court.getName().equalsIgnoreCase(req.name()) &&
                 courtRepository.existsByVenueIdAndNameIgnoreCase(court.getVenue().getId(), req.name())) {
             throw new ConflictException("COURT_NAME_TAKEN",
-                    "Nama lapangan '%d' sudah dipakai di venue ini".formatted(req.name()));
+                    "Nama lapangan '%s' sudah dipakai di venue ini".formatted(req.name()));
         }
 
         court.setName(req.name());

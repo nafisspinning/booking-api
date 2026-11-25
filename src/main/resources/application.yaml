@@ -3,6 +3,10 @@ spring:
   application:
     name: booking
 
+  # baca rahasia lokal dari .env (KEY=VALUE) di root proyek; optional → tetap start jika file tidak ada
+  config:
+    import: optional:file:.env[.properties]
+
   datasource:
     url: jdbc:postgresql://localhost:5432/booking
     username: booking
@@ -27,8 +31,10 @@ app:
   jwt:
     secret: ${JWT_SECRET:dev-only-secret-ganti-dengan-string-acak-min-32-karakter}
     ttl: 2h
-    
 
+  midtrans:
+    server-key: ${MIDTRANS_SERVER_KEY:}
+    snap-base-url: https://app.sandbox.midtrans.com
 
 management:
   endpoints:

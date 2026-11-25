@@ -250,6 +250,52 @@ Setelah itu, uji race condition paralel seharusnya menghasilkan **satu 201** dan
 
 ---
 
+## 4b. Kasus kedua: `missing column [booking_id] in table [payments]`
+
+Muncul setelah fitur payment ditambahkan (branch `feat/payment`).
+
+```
+SchemaManagementException: Schema validation: missing column [booking_id] in table [payments]
+```
+
+**Penyebab.** Error ini datang dari **Hibernate**, bukan Flyway. Flyway sudah berhasil menjalankan V3, tetapi tabel hasilnya tidak cocok dengan entity:
+
+| Entity `Payment` (Java) | Tabel `payments` (V1 + V3) |
+|---|---|
+| `@OneToOne @JoinColumn(name = "booking_id") Booking booking` | **tidak ada** `booking_id` |
+| (tidak ada field user) | `user_id UUID NOT NULL` |
+| `redirectUrl` | `redirect_url` (ditambahkan V3) ✔ |
+
+Dengan `ddl-auto: validate`, Hibernate memeriksa setiap kolom yang dipetakan entity dan menolak start jika ada yang hilang.
+`user_id` tidak dilaporkan karena kolom yang **berlebih** di tabel tidak dianggap error. Namun kolom itu `NOT NULL`, jadi INSERT payment pasti gagal jika dibiarkan.
+
+**Perbaikan: migration baru, bukan mengedit yang lama.**
+V1 dan V3 sudah tercatat di `flyway_schema_history`. Mengeditnya akan membuat checksum tidak cocok. Karena itu dibuat `V4__link_payment_to_booking.sql`:
+
+```sql
+ALTER TABLE payments DROP COLUMN user_id;
+
+ALTER TABLE payments
+    ADD COLUMN booking_id UUID NOT NULL
+        CONSTRAINT fk_payments_booking REFERENCES bookings (id),
+    ADD CONSTRAINT uq_payments_booking UNIQUE (booking_id);
+```
+
+- `UNIQUE (booking_id)`: satu booking hanya punya satu payment, sesuai dengan `@OneToOne`.
+- `user_id` dihapus karena pemilik payment bisa ditelusuri lewat `payments.booking_id → bookings.user_id`. Menyimpan keduanya berisiko tidak konsisten.
+- `ADD COLUMN ... NOT NULL` tanpa default hanya berhasil karena tabel `payments` **masih kosong**. Jika sudah ada data, isi kolomnya dulu (tambah kolom nullable → `UPDATE` → `SET NOT NULL`).
+
+**Cara mencegahnya:** setiap kali menambah atau mengubah field `@Entity`, tanyakan "migration mana yang membuat kolom ini?". Entity dan migration sebaiknya selalu masuk **commit yang sama**.
+
+### Masalah ikutan: `IllegalArgumentException: Empty key` pada `jwtEncoder`
+
+Setelah V4 diterapkan, aplikasi masih gagal karena `.env` berisi baris `JWT_SECRET=` yang kosong.
+
+`${JWT_SECRET:default}` hanya memakai default jika property **tidak ada sama sekali**. Property yang **ada tetapi kosong** tetap dipakai, sehingga kunci HMAC menjadi string kosong dan ditolak.
+Solusinya: hapus baris kosong itu, atau isi dengan `openssl rand -base64 48`. `.env.example` kini menandai `JWT_SECRET` dengan `#`.
+
+---
+
 ## 5. Aturan praktis Flyway
 
 1. **Jangan pernah mengedit migration yang sudah dijalankan.** Buat file baru (`V3__...`) untuk perubahan berikutnya.

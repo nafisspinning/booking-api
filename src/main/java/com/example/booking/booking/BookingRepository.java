@@ -1,5 +1,6 @@
 package com.example.booking.booking;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Collection;
@@ -35,4 +36,6 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
 
     @EntityGraph(attributePaths = {"court", "court.venue"})
     Optional<Booking> findWithCourtById(UUID id);
+
+    List<Booking> findTop100ByStatusAndExpiresAtBefore(BookingStatus status, Instant now);
 }
